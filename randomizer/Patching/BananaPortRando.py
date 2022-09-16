@@ -1,31 +1,96 @@
-'Rando write bananaport locations.'
+"""Rando write bananaport locations."""
 from imp import source_from_cache
+
 import js
 from randomizer.Lists.Warps import BananaportVanilla
 from randomizer.Patching.Patcher import ROM
 from randomizer.Spoiler import Spoiler
-def randomize_bananaport(spoiler):
-	'Rando write bananaport locations.';V='idx';U='scale';K=spoiler;C='big';L=[532,531,529,530,528]
-	if K.settings.bananaport_rando:
-		for M in K.bananaport_replacements:
-			B={};G=int(M['containing_map']);H=js.pointer_addresses[9]['entries'][G]['pointing_to'];ROM().seek(H);W=int.from_bytes(ROM().readBytes(4),C)
-			for N in range(W):
-				A=H+4+N*48;ROM().seek(A+40);O=int.from_bytes(ROM().readBytes(2),C)
-				if O in L:
-					g=L.index(O);ROM().seek(A+42);P=int.from_bytes(ROM().readBytes(2),C);ROM().seek(A+0);X=int.from_bytes(ROM().readBytes(4),C);ROM().seek(A+4);Y=int.from_bytes(ROM().readBytes(4),C);ROM().seek(A+8);Z=int.from_bytes(ROM().readBytes(4),C);ROM().seek(A+12);a=int.from_bytes(ROM().readBytes(4),C);ROM().seek(A+24);b=int.from_bytes(ROM().readBytes(4),C);ROM().seek(A+28);c=int.from_bytes(ROM().readBytes(4),C);ROM().seek(A+32);d=int.from_bytes(ROM().readBytes(4),C);Q=False
-					for I in BananaportVanilla.values():
-						if I.map_id==G and I.obj_id_vanilla==P and I.locked:Q=True
-					if not Q:B[P]={'x':X,'y':Y,'z':Z,U:a,'rx':b,'ry':c,'rz':d,V:N}
-			for R in M['pads']:
-				e=R['warp_index']
-				for (S,D) in enumerate(R['warp_ids']):
-					J=0;T=[];F=-1
-					for E in BananaportVanilla.values():
-						if E.map_id==G and E.vanilla_warp==e and F==-1:
-							T.append(E.locked)
-							if S==J and not E.locked or S==0 and J==1 and T[0]and not E.locked:F=E.obj_id_vanilla
-							J+=1
-					if F!=-1:
-						if F in B and D in B:f=B[F][V];A=H+48*f+4;ROM().seek(A);ROM().writeMultipleBytes(B[D]['x'],4);ROM().writeMultipleBytes(B[D]['y'],4);ROM().writeMultipleBytes(B[D]['z'],4);ROM().writeMultipleBytes(B[D][U],4);ROM().seek(A+24);ROM().writeMultipleBytes(B[D]['rx'],4);ROM().writeMultipleBytes(B[D]['ry'],4);ROM().writeMultipleBytes(B[D]['rz'],4)
-						else:print('ERROR: ID not found in pad location dump')
-					else:print('ERROR: Vanilla ID not found')
+
+
+def randomize_bananaport(spoiler: Spoiler):
+    """Rando write bananaport locations."""
+    pad_types = [0x214, 0x213, 0x211, 0x212, 0x210]
+
+    if spoiler.settings.bananaport_rando:
+        for cont_map in spoiler.bananaport_replacements:
+            pad_vanilla = []
+            cont_map_id = int(cont_map["containing_map"])
+            cont_map_setup_address = js.pointer_addresses[9]["entries"][cont_map_id]["pointing_to"]
+            # Pointer Table 9, use "containing_map" as a map index to grab setup start address
+            ROM().seek(cont_map_setup_address)
+            model2_count = int.from_bytes(ROM().readBytes(4), "big")
+            for x in range(model2_count):
+                start = cont_map_setup_address + 4 + (x * 0x30)
+                ROM().seek(start + 0x28)
+                obj_type = int.from_bytes(ROM().readBytes(2), "big")
+                if obj_type in pad_types:
+                    pad_index = pad_types.index(obj_type)
+                    ROM().seek(start + 0x2A)
+                    obj_id = int.from_bytes(ROM().readBytes(2), "big")
+                    ROM().seek(start + 0)
+                    obj_x = int.from_bytes(ROM().readBytes(4), "big")
+                    ROM().seek(start + 4)
+                    obj_y = int.from_bytes(ROM().readBytes(4), "big")
+                    ROM().seek(start + 8)
+                    obj_z = int.from_bytes(ROM().readBytes(4), "big")
+                    ROM().seek(start + 12)
+                    obj_scale = int.from_bytes(ROM().readBytes(4), "big")
+                    ROM().seek(start + 0x18)
+                    obj_rotx = int.from_bytes(ROM().readBytes(4), "big")
+                    ROM().seek(start + 0x1C)
+                    obj_roty = int.from_bytes(ROM().readBytes(4), "big")
+                    ROM().seek(start + 0x20)
+                    obj_rotz = int.from_bytes(ROM().readBytes(4), "big")
+                    obj_index = x
+                    banned = False
+                    for warp in BananaportVanilla.values():
+                        if warp.map_id == cont_map_id and warp.obj_id_vanilla == obj_id and warp.locked:
+                            banned = True
+                    if not banned:
+                        pad_vanilla.append(
+                            {
+                                "pad_index": pad_index,
+                                "_id": obj_id,
+                                "x": obj_x,
+                                "y": obj_y,
+                                "z": obj_z,
+                                "scale": obj_scale,
+                                "rx": obj_rotx,
+                                "ry": obj_roty,
+                                "rz": obj_rotz,
+                                "idx": obj_index,
+                            }
+                        )
+            for y in cont_map["pads"]:
+                warp_idx = y["warp_index"]
+                repl_ids = y["warp_ids"]
+                source_counter = 0
+                for repl in repl_ids:
+                    for vanilla_pad in pad_vanilla:
+                        if vanilla_pad["_id"] == repl:
+                            vanilla_idx = vanilla_pad["idx"]
+                            start = cont_map_setup_address + (0x30 * vanilla_idx) + 4
+                            ref_pad = {}
+                            counter = 0
+                            for vanilla_pad0 in pad_vanilla:
+                                if vanilla_pad0["pad_index"] == warp_idx:
+                                    if counter == source_counter:
+                                        ref_pad = vanilla_pad0
+                                    counter += 1
+                            ROM().seek(start + 0x28)
+                            ROM().writeMultipleBytes(pad_types[vanilla_pad["pad_index"]], 2)
+                            ROM().seek(start + 0)
+                            ROM().writeMultipleBytes(ref_pad["x"], 4)
+                            ROM().seek(start + 4)
+                            ROM().writeMultipleBytes(ref_pad["y"], 4)
+                            ROM().seek(start + 8)
+                            ROM().writeMultipleBytes(ref_pad["z"], 4)
+                            ROM().seek(start + 12)
+                            ROM().writeMultipleBytes(ref_pad["scale"], 4)
+                            ROM().seek(start + 0x18)
+                            ROM().writeMultipleBytes(ref_pad["rx"], 4)
+                            ROM().seek(start + 0x1C)
+                            ROM().writeMultipleBytes(ref_pad["ry"], 4)
+                            ROM().seek(start + 0x20)
+                            ROM().writeMultipleBytes(ref_pad["rz"], 4)
+                    source_counter += 1

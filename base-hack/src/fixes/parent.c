@@ -114,7 +114,7 @@ void callParentMapFilter(void) {
 			int curr = CurrentMap;
 			int level = levelIndexMapping[curr];
 			if (level < 7) {
-				setPermFlag(FLAG_STORY_JAPES + level);
+				setPermFlag(453 + level);
 			}
 			int banned = 0;
 			for (int i = 0; i < sizeof(banned_filter_maps); i++) {

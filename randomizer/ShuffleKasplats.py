@@ -1,70 +1,137 @@
-'Module used to handle setting and randomizing kasplats.'
-import random,js,randomizer.Fill as Fill,randomizer.Lists.Exceptions as Ex,randomizer.Logic as Logic
-from randomizer.Enums.Items import Items
-from randomizer.Enums.Kongs import GetKongs,Kongs
+"""Module used to handle setting and randomizing kasplats."""
+import random
+
+import js
+import randomizer.Fill as Fill
+import randomizer.Lists.Exceptions as Ex
+import randomizer.Logic as Logic
+from randomizer.Enums.Kongs import Kongs, GetKongs
 from randomizer.Enums.Levels import Levels
 from randomizer.Enums.Locations import Locations
-from randomizer.Enums.Types import Types
-from randomizer.Lists.KasplatLocations import KasplatLocationList
-from randomizer.Lists.Location import Location
-from randomizer.Lists.MapsAndExits import Maps
-from randomizer.LogicClasses import LocationLogic
-shufflable={Locations.IslesKasplatHelmLobby:Kongs.donkey,Locations.IslesKasplatCastleLobby:Kongs.diddy,Locations.IslesKasplatCavesLobby:Kongs.lanky,Locations.IslesKasplatFactoryLobby:Kongs.tiny,Locations.IslesKasplatGalleonLobby:Kongs.chunky,Locations.JapesKasplatLeftTunnelNear:Kongs.donkey,Locations.JapesKasplatNearPaintingRoom:Kongs.diddy,Locations.JapesKasplatNearLab:Kongs.lanky,Locations.JapesKasplatLeftTunnelFar:Kongs.tiny,Locations.AztecKasplatSandyBridge:Kongs.donkey,Locations.AztecKasplatLlamaTemple:Kongs.lanky,Locations.AztecKasplatNearLab:Kongs.tiny,Locations.FactoryKasplatProductionTop:Kongs.donkey,Locations.FactoryKasplatProductionBottom:Kongs.diddy,Locations.FactoryKasplatRandD:Kongs.lanky,Locations.FactoryKasplatStorage:Kongs.tiny,Locations.FactoryKasplatBlocks:Kongs.chunky,Locations.GalleonKasplatGoldTower:Kongs.donkey,Locations.GalleonKasplatLighthouseArea:Kongs.diddy,Locations.GalleonKasplatCannons:Kongs.lanky,Locations.GalleonKasplatNearLab:Kongs.tiny,Locations.GalleonKasplatNearSub:Kongs.chunky,Locations.ForestKasplatNearBarn:Kongs.donkey,Locations.ForestKasplatInsideMushroom:Kongs.diddy,Locations.ForestKasplatOwlTree:Kongs.lanky,Locations.ForestKasplatLowerMushroomExterior:Kongs.tiny,Locations.ForestKasplatUpperMushroomExterior:Kongs.chunky,Locations.CavesKasplatNearLab:Kongs.donkey,Locations.CavesKasplatPillar:Kongs.lanky,Locations.CavesKasplatNearCandy:Kongs.tiny,Locations.CavesKasplatOn5DI:Kongs.chunky,Locations.CastleKasplatCrypt:Kongs.diddy,Locations.CastleKasplatHalfway:Kongs.lanky,Locations.CastleKasplatLowerLedge:Kongs.tiny,Locations.CastleKasplatNearCandy:Kongs.chunky}
-constants={Locations.JapesKasplatUnderground:Kongs.chunky,Locations.AztecKasplatOnTinyTemple:Kongs.diddy,Locations.AztecKasplatChunky5DT:Kongs.chunky,Locations.CavesKasplatNearFunky:Kongs.diddy,Locations.CastleKasplatTree:Kongs.donkey}
+
+shufflable = {
+    Locations.IslesKasplatHelmLobby: Kongs.donkey,
+    Locations.IslesKasplatCastleLobby: Kongs.diddy,
+    Locations.IslesKasplatCavesLobby: Kongs.lanky,
+    Locations.IslesKasplatFactoryLobby: Kongs.tiny,
+    Locations.IslesKasplatGalleonLobby: Kongs.chunky,
+    Locations.JapesKasplatLeftTunnelNear: Kongs.donkey,
+    Locations.JapesKasplatNearPaintingRoom: Kongs.diddy,
+    Locations.JapesKasplatNearLab: Kongs.lanky,
+    Locations.JapesKasplatLeftTunnelFar: Kongs.tiny,
+    Locations.AztecKasplatSandyBridge: Kongs.donkey,
+    Locations.AztecKasplatLlamaTemple: Kongs.lanky,
+    Locations.AztecKasplatNearLab: Kongs.tiny,
+    Locations.FactoryKasplatProductionTop: Kongs.donkey,
+    Locations.FactoryKasplatProductionBottom: Kongs.diddy,
+    Locations.FactoryKasplatRandD: Kongs.lanky,
+    Locations.FactoryKasplatStorage: Kongs.tiny,
+    Locations.FactoryKasplatBlocks: Kongs.chunky,
+    Locations.GalleonKasplatGoldTower: Kongs.donkey,
+    Locations.GalleonKasplatLighthouseArea: Kongs.diddy,
+    Locations.GalleonKasplatCannons: Kongs.lanky,
+    Locations.GalleonKasplatNearLab: Kongs.tiny,
+    Locations.GalleonKasplatNearSub: Kongs.chunky,
+    Locations.ForestKasplatNearBarn: Kongs.donkey,
+    Locations.ForestKasplatInsideMushroom: Kongs.diddy,
+    Locations.ForestKasplatOwlTree: Kongs.lanky,
+    Locations.ForestKasplatLowerMushroomExterior: Kongs.tiny,
+    Locations.ForestKasplatUpperMushroomExterior: Kongs.chunky,
+    Locations.CavesKasplatNearLab: Kongs.donkey,
+    Locations.CavesKasplatPillar: Kongs.lanky,
+    Locations.CavesKasplatNearCandy: Kongs.tiny,
+    Locations.CavesKasplatOn5DI: Kongs.chunky,
+    Locations.CastleKasplatCrypt: Kongs.diddy,
+    Locations.CastleKasplatHalfway: Kongs.lanky,
+    Locations.CastleKasplatLowerLedge: Kongs.tiny,
+    Locations.CastleKasplatNearCandy: Kongs.chunky,
+}
+
+constants = {
+    # Must be chunky since need to shoot pineapple to lower vines and they don't stay lowered
+    Locations.JapesKasplatUnderground: Kongs.chunky,
+    # Need jetpack to reach so must be diddy
+    Locations.AztecKasplatOnTinyTemple: Kongs.diddy,
+    # Pineapple doors don't stay open, so need to be chunky
+    Locations.AztecKasplatChunky5DT: Kongs.chunky,
+    # Need to jetpack to the warp pad to get to the kasplat... can technically fall onto it but seems awful
+    Locations.CavesKasplatNearFunky: Kongs.diddy,
+    # Coconut gate doesn't stay open
+    Locations.CastleKasplatTree: Kongs.donkey,
+}
+
+
 def FindLevel(location):
-	'Find the level given a location.'
-	for A in Logic.Regions.values():
-		for B in A.locations:
-			if B.id==location:return A.level
-def GetBlueprintItemForKongAndLevel(level,kong):
-	'For the Level and Kong enum values, return the Blueprint Item enum tied to it.';B=int(Items.JungleJapesDonkeyBlueprint);A=int(level)
-	if A>7:A=7
-	return Items(B+5*A+int(kong))
-def GetBlueprintLocationForKongAndLevel(level,kong):
-	'For the Level and Kong enum values, return the generic Blueprint Location enum tied to it.';B=int(Locations.JapesDonkeyKasplatRando);A=int(level)
-	if A>7:A=7
-	return Locations(B+5*A+int(kong))
-def ShuffleKasplatsAndLocations(spoiler,LogicVariables):
-	'Shuffle the location and kong assigned to each kasplat. This should replace ShuffleKasplats if all goes well.';G=LogicVariables;F=spoiler;F.shuffled_kasplat_map={};G.kasplat_map={}
-	for B in shufflable:Logic.LocationList.pop(B,None)
-	for B in constants:Logic.LocationList.pop(B,None)
-	for D in KasplatLocationList:
-		H=KasplatLocationList[D];I=GetKongs();random.shuffle(I)
-		for C in I:
-			J=[]
-			for A in H:
-				if not A.selected and C in A.kong_lst:J.append(A.name)
-			K=random.choice(J)
-			for A in H:
-				if A.name==K:A.setKasplat();L=GetBlueprintItemForKongAndLevel(D,C);E=GetBlueprintLocationForKongAndLevel(D,C);B=Location(A.name,L,Types.Blueprint,[A.map,C]);B.PlaceDefaultItem();Logic.LocationList[E]=B;M=Logic.Regions[A.region_id];M.locations.append(LocationLogic(E,A.additional_logic));G.kasplat_map[E]=C;F.shuffled_kasplat_map[A.name]=int(C);break
-def ResetShuffledKasplatLocations():
-	'Reset all placed kasplat locations.'
-	for C in KasplatLocationList:
-		for A in KasplatLocationList[C]:
-			if A.selected:A.setKasplat(state=False);B=Logic.Regions[A.region_id];B.locations=[A for A in B.locations if A.id<Locations.JapesDonkeyKasplatRando or A.id>Locations.IslesChunkyKasplatRando]
+    """Find the level given a location."""
+    for region in Logic.Regions.values():
+        for loc in region.locations:
+            if loc.id == location:
+                return region.level
+
+
 def ShuffleKasplats(LogicVariables):
-	'Shuffles the kong assigned to each kasplat.';A=LogicVariables;B=[];C=GetKongs()
-	for J in range(len(Levels)-1):B.append(C.copy())
-	for (I,D) in constants.items():E=FindLevel(I);B[E].remove(D)
-	A.kasplat_map={}
-	for F in shufflable.keys():A.kasplat_map[F]=Kongs.any
-	A.kasplat_map.update(constants);G=list(shufflable.keys());random.shuffle(G)
-	while len(G)>0:
-		F=G.pop();E=FindLevel(F);C=B[E];random.shuffle(C);H=False
-		for D in C:A.kasplat_map[F]=D;B[E].remove(D);H=True;break
-		if not H:raise Ex.KasplatOutOfKongs
-def KasplatShuffle(spoiler,LogicVariables):
-	'Facilitate the shuffling of kasplat types.';A=LogicVariables
-	if A.settings.kasplat_rando:
-		B=0
-		while True:
-			try:
-				if A.settings.kasplat_location_rando:ShuffleKasplatsAndLocations(spoiler,A)
-				else:ShuffleKasplats(A)
-				if not Fill.VerifyWorld(A.settings):raise Ex.KasplatPlacementException
-				return
-			except Ex.KasplatPlacementException:
-				if B==5:js.postMessage('Kasplat placement failed, out of retries.');raise Ex.KasplatAttemptCountExceeded
-				B+=1;js.postMessage('Kasplat placement failed. Retrying. Tries: '+str(B))
-				if A.settings.kasplat_location_rando:ResetShuffledKasplatLocations()
-def InitKasplatMap(LogicVariables):'Initialize kasplat_map in logic variables with default values.';A=LogicVariables;A.kasplat_map={};A.kasplat_map.update(shufflable);A.kasplat_map.update(constants)
+    """Shuffles the kong assigned to each kasplat."""
+    # Make sure only 1 of each kasplat per level, set up array to track that
+    level_kongs = []
+    kongs = GetKongs()
+    # Add a list of kongs for each level
+    # Excludes Shops level, but will include a useless Helm level
+    for i in range(len(Levels) - 1):
+        level_kongs.append(kongs.copy())
+    # Remove constants
+    for loc, kong in constants.items():
+        level = FindLevel(loc)
+        level_kongs[level].remove(kong)
+    # Set up kasplat map
+    LogicVariables.kasplat_map = {}
+    # Make all shufflable kasplats initially accessible as anyone
+    for location in shufflable.keys():
+        LogicVariables.kasplat_map[location] = Kongs.any
+    LogicVariables.kasplat_map.update(constants)
+    # Do the shuffling
+    shuffle_locations = list(shufflable.keys())
+    random.shuffle(shuffle_locations)
+    while len(shuffle_locations) > 0:
+        location = shuffle_locations.pop()
+        # Get this location's level and available kongs for this level
+        level = FindLevel(location)
+        kongs = level_kongs[level]
+        random.shuffle(kongs)
+        # Check each kong to see if placing it here produces a valid world
+        success = False
+        for kong in kongs:
+            LogicVariables.kasplat_map[location] = kong
+            # Assuming Successful placement, remove kong
+            level_kongs[level].remove(kong)
+            success = True
+            break
+        if not success:
+            raise Ex.KasplatOutOfKongs
+
+
+def KasplatShuffle(LogicVariables):
+    """Facilitate the shuffling of kasplat types."""
+    if LogicVariables.settings.kasplat_rando:
+        retries = 0
+        while True:
+            try:
+                # Shuffle kasplats
+                ShuffleKasplats(LogicVariables)
+                # Verify world by assuring all locations are still reachable
+                if not Fill.VerifyWorld(LogicVariables.settings):
+                    raise Ex.KasplatPlacementException
+                return
+            except Ex.KasplatPlacementException:
+                if retries == 5:
+                    js.postMessage("Kasplat placement failed, out of retries.")
+                    raise Ex.KasplatAttemptCountExceeded
+                retries += 1
+                js.postMessage("Kasplat placement failed. Retrying. Tries: " + str(retries))
+
+
+def InitKasplatMap(LogicVariables):
+    """Initialize kasplat_map in logic variables with default values."""
+    # Just use default kasplat associations.
+    LogicVariables.kasplat_map = {}
+    LogicVariables.kasplat_map.update(shufflable)
+    LogicVariables.kasplat_map.update(constants)

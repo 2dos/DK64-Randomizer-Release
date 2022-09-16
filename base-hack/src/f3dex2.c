@@ -1,10 +1,10 @@
 #include "../include/common.h"
 
-int* drawImageWithFilter(int* dl, int text_index, codecs codec_index, int img_width, int img_height, int x, int y, float xScale, float yScale, int red, int green, int blue, int opacity) {
+int* drawImage(int* dl, int text_index, codecs codec_index, int img_width, int img_height, int x, int y, float xScale, float yScale, int opacity) {
 	dl = initDisplayList(dl);
 	*(unsigned int*)(dl++) = 0xE200001C;
 	*(unsigned int*)(dl++) = 0x00504240;
-	gDPSetPrimColor(dl, 0, 0, red, green, blue, opacity);
+	gDPSetPrimColor(dl, 0, 0, 0xFF, 0xFF, 0xFF, opacity);
 	dl += 2;
 	*(unsigned int*)(dl++) = 0xFCFF97FF;
 	*(unsigned int*)(dl++) = 0xFF2CFE7F;
@@ -12,10 +12,6 @@ int* drawImageWithFilter(int* dl, int text_index, codecs codec_index, int img_wi
 	*(unsigned int*)(dl++) = 0x00000000;
 	dl = displayImage(dl++, text_index, 0, codec_index, img_width, img_height, x, y, xScale, yScale, 0, 0.0f);
 	return dl;
-};
-
-int* drawImage(int* dl, int text_index, codecs codec_index, int img_width, int img_height, int x, int y, float xScale, float yScale, int opacity) {
-	return drawImageWithFilter(dl, text_index, codec_index, img_width, img_height, x, y, xScale, yScale, 0xFF, 0xFF, 0xFF, opacity);
 };
 
 int* drawTri(int* dl, short x1, short y1, short x2, short y2, short x3, short y3, int red, int green, int blue, int alpha) {

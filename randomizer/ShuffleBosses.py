@@ -1,72 +1,163 @@
-'Randomize Boss Locations.'
+"""Randomize Boss Locations."""
 import random
 from array import array
 from randomizer.Enums.Items import Items
 from randomizer.Enums.Kongs import Kongs
-from randomizer.Lists.Exceptions import BossOutOfLocationsException,FillException,ItemPlacementException
+from randomizer.Lists.Exceptions import FillException
 from randomizer.Lists.MapsAndExits import Maps
-BossMapList=[Maps.JapesBoss,Maps.AztecBoss,Maps.FactoryBoss,Maps.GalleonBoss,Maps.FungiBoss,Maps.CavesBoss,Maps.CastleBoss]
-def ShuffleBosses(boss_location_rando):
-	'Shuffle boss locations.';A=BossMapList.copy()
-	if boss_location_rando:random.shuffle(A)
-	return A
+
+BossMapList = [Maps.JapesBoss, Maps.AztecBoss, Maps.FactoryBoss, Maps.GalleonBoss, Maps.FungiBoss, Maps.CavesBoss, Maps.CastleBoss]
+
+
+def ShuffleBosses(boss_location_rando: bool):
+    """Shuffle boss locations."""
+    boss_maps = BossMapList.copy()
+    if boss_location_rando:
+        random.shuffle(boss_maps)
+    return boss_maps
+
+
 def ShuffleBossKongs(settings):
-	'Shuffle the kongs required for the bosses.';A=settings;E={Maps.JapesBoss:Kongs.donkey,Maps.AztecBoss:Kongs.diddy,Maps.FactoryBoss:Kongs.tiny,Maps.GalleonBoss:Kongs.lanky,Maps.FungiBoss:Kongs.chunky,Maps.CavesBoss:Kongs.donkey,Maps.CastleBoss:Kongs.lanky};B=[]
-	for F in range(7):
-		C=A.boss_maps[F]
-		if A.boss_kong_rando:D=SelectRandomKongForBoss(C,A.hard_bosses)
-		else:D=E[C]
-		B.append(D)
-	return B
-def SelectRandomKongForBoss(boss_map,hard_bosses):
-	'Randomly choses from the allowed list for the boss.';B=boss_map;A=[]
-	if B==Maps.JapesBoss:A=[Kongs.donkey,Kongs.diddy,Kongs.lanky,Kongs.tiny,Kongs.chunky]
-	elif B==Maps.AztecBoss:A=[Kongs.donkey,Kongs.diddy,Kongs.lanky,Kongs.tiny,Kongs.chunky]
-	elif B==Maps.FactoryBoss:
-		if hard_bosses:A=[Kongs.donkey,Kongs.tiny,Kongs.chunky]
-		else:A=[Kongs.tiny]
-	elif B==Maps.GalleonBoss:A=[Kongs.donkey,Kongs.diddy,Kongs.lanky,Kongs.tiny,Kongs.chunky]
-	elif B==Maps.FungiBoss:A=[Kongs.chunky]
-	elif B==Maps.CavesBoss:A=[Kongs.donkey,Kongs.diddy,Kongs.lanky,Kongs.tiny,Kongs.chunky]
-	elif B==Maps.CastleBoss:A=[Kongs.donkey,Kongs.diddy,Kongs.lanky,Kongs.tiny,Kongs.chunky]
-	return random.choice(A)
-def ShuffleKutoutKongs(boss_maps,boss_kongs,boss_kong_rando):
-	'Shuffle the Kutout kong order.';C=[Kongs.lanky,Kongs.tiny,Kongs.chunky,Kongs.donkey,Kongs.diddy];A=[]
-	if boss_kong_rando:E=boss_maps.index(Maps.CastleBoss);D=boss_kongs[E];B=C.copy();B.remove(D);random.shuffle(B);A.append(D);A.extend(B)
-	else:A=C
-	return A
-def ShuffleKKOPhaseOrder(settings):
-	'Shuffle the phase order in King Kut Out.';A=[0,1,2,3];random.shuffle(A);B=[]
-	for C in range(3):B.append(A[C])
-	return B.copy()
-def ShuffleBossesBasedOnOwnedItems(settings,ownedKongs,ownedMoves):
-	'Perform Boss Location & Boss Kong rando, ensuring each first boss can be beaten with an unlocked kong and owned moves.';I=ownedMoves;B=ownedKongs;A=settings
-	try:
-		F={0,1,2,3,4,5,6};J='Dogadon 2';M=[A for A in F if Kongs.chunky in B[A]and Items.HunkyChunky in I[A]]
-		if not A.kong_rando and not A.boss_location_rando and 4 not in M:raise ItemPlacementException('Items not placed to allow vanilla Dogadon 2.')
-		N=random.choice(M);O=Kongs.chunky;F.remove(N);J='Mad Jack'
-		if A.hard_bosses:
-			K=[A for A in F if Kongs.donkey in B[A]or Kongs.chunky in B[A]or Kongs.tiny in B[A]and Items.PonyTailTwirl in I[A]];G=random.choice(K);P=set(B[G]).intersection({Kongs.donkey,Kongs.chunky})
-			if Kongs.tiny in B[G]and Items.PonyTailTwirl in I[G]:P.add(Kongs.tiny)
-			L=random.choice(list(P))
-		else:K=[A for A in F if Kongs.tiny in B[A]and Items.PonyTailTwirl in I[A]];G=random.choice(K);L=Kongs.tiny
-		F.remove(G);J='the easy bosses to place (if this breaks here something REALLY strange happened)';H=list(F);random.shuffle(H);Q=H.pop();R=random.choice(B[Q]);S=H.pop();T=random.choice(B[S]);U=H.pop();V=random.choice(B[U]);W=H.pop();X=random.choice(B[W]);Y=H.pop();Z=random.choice(B[Y]);C=[];D=[]
-		for E in range(0,7):
-			if E==U:C.append(Maps.JapesBoss);D.append(V)
-			elif E==W:C.append(Maps.AztecBoss);D.append(X)
-			elif E==G:C.append(Maps.FactoryBoss);D.append(L)
-			elif E==Q:C.append(Maps.GalleonBoss);D.append(R)
-			elif E==N:C.append(Maps.FungiBoss);D.append(O)
-			elif E==S:C.append(Maps.CavesBoss);D.append(T)
-			elif E==Y:C.append(Maps.CastleBoss);D.append(Z)
-		if len(C)<7:raise FillException('Invalid boss order with fewer than the 7 required main levels.')
-	except Exception as a:
-		if'index out of range'in a.args[0]:raise BossOutOfLocationsException('No valid locations to place '+J)
-		raise FillException(a)
-	if A.kong_rando or A.boss_location_rando:A.boss_maps=C
-	else:A.boss_maps=BossMapList.copy()
-	if A.kong_rando or A.boss_kong_rando:
-		if not A.boss_location_rando:A.boss_kongs=[V,X,L,R,O,T,Z]
-		else:A.boss_kongs=D
-	else:A.boss_kongs=ShuffleBossKongs(A)
-	A.kutout_kongs=ShuffleKutoutKongs(A.boss_maps,A.boss_kongs,A.boss_kong_rando)
+    """Shuffle the kongs required for the bosses."""
+    vanillaBossKongs = {
+        Maps.JapesBoss: Kongs.donkey,
+        Maps.AztecBoss: Kongs.diddy,
+        Maps.FactoryBoss: Kongs.tiny,
+        Maps.GalleonBoss: Kongs.lanky,
+        Maps.FungiBoss: Kongs.chunky,
+        Maps.CavesBoss: Kongs.donkey,
+        Maps.CastleBoss: Kongs.lanky,
+    }
+
+    boss_kongs = []
+    for level in range(7):
+        boss_map = settings.boss_maps[level]
+        if settings.boss_kong_rando:
+            kong = SelectRandomKongForBoss(boss_map, settings.hard_mad_jack)
+        else:
+            kong = vanillaBossKongs[boss_map]
+        boss_kongs.append(kong)
+
+    return boss_kongs
+
+
+def SelectRandomKongForBoss(boss_map: Maps, hard_mad_jack: bool):
+    """Randomly choses from the allowed list for the boss."""
+    possibleKongs = []
+    if boss_map == Maps.JapesBoss:
+        possibleKongs = [Kongs.donkey, Kongs.diddy, Kongs.lanky, Kongs.tiny, Kongs.chunky]
+    elif boss_map == Maps.AztecBoss:
+        possibleKongs = [Kongs.donkey, Kongs.diddy, Kongs.lanky, Kongs.tiny, Kongs.chunky]
+    elif boss_map == Maps.FactoryBoss:
+        if hard_mad_jack:
+            possibleKongs = [Kongs.donkey, Kongs.tiny, Kongs.chunky]
+        else:
+            possibleKongs = [Kongs.tiny]
+    elif boss_map == Maps.GalleonBoss:
+        possibleKongs = [Kongs.diddy, Kongs.lanky, Kongs.tiny, Kongs.chunky]
+    elif boss_map == Maps.FungiBoss:
+        possibleKongs = [Kongs.chunky]
+    elif boss_map == Maps.CavesBoss:
+        possibleKongs = [Kongs.donkey, Kongs.diddy, Kongs.lanky, Kongs.chunky]
+    elif boss_map == Maps.CastleBoss:
+        possibleKongs = [Kongs.donkey, Kongs.diddy, Kongs.lanky, Kongs.tiny, Kongs.chunky]
+    return random.choice(possibleKongs)
+
+
+def ShuffleKutoutKongs(boss_maps: array, boss_kongs: array, boss_kong_rando: bool):
+    """Shuffle the Kutout kong order."""
+    vanillaKutoutKongs = [Kongs.lanky, Kongs.tiny, Kongs.chunky, Kongs.donkey, Kongs.diddy]
+    kutout_kongs = []
+    if boss_kong_rando:
+        kutoutLocation = boss_maps.index(Maps.CastleBoss)
+        starting_kong = boss_kongs[kutoutLocation]
+        kongPool = vanillaKutoutKongs.copy()
+        kongPool.remove(starting_kong)
+        random.shuffle(kongPool)
+
+        kutout_kongs.append(starting_kong)
+        kutout_kongs.extend(kongPool)
+    else:
+        kutout_kongs = vanillaKutoutKongs
+    return kutout_kongs
+
+
+def ShuffleBossesBasedOnOwnedItems(settings, ownedKongs: dict, ownedMoves: dict):
+    """Perform Boss Location & Boss Kong rando, ensuring each first boss can be beaten with an unlocked kong and owned moves."""
+    try:
+        bossLevelOptions = {0, 1, 2, 3, 4, 5, 6}
+        # First place dogadon 2 (most restrictive)
+        forestBossOptions = [x for x in bossLevelOptions if Kongs.chunky in ownedKongs[x] and Items.HunkyChunky in ownedMoves[x]]
+        forestBossIndex = random.choice(forestBossOptions)
+        forestBossKong = Kongs.chunky
+        bossLevelOptions.remove(forestBossIndex)
+        # Then place Mad jack (next most restrictive)
+        if settings.hard_mad_jack:
+            factoryBossOptions = [
+                x for x in bossLevelOptions if Kongs.donkey in ownedKongs[x] or Kongs.chunky in ownedKongs[x] or (Kongs.tiny in ownedKongs[x] and Items.PonyTailTwirl in ownedMoves[x])
+            ]
+            factoryBossIndex = random.choice(factoryBossOptions)
+            factoryBossKongOptions = set(ownedKongs[factoryBossIndex]).intersection({Kongs.donkey, Kongs.chunky})
+            if Kongs.tiny in ownedKongs[factoryBossIndex] and Items.PonyTailTwirl in ownedMoves[factoryBossIndex]:
+                factoryBossKongOptions.add(Kongs.tiny)
+            factoryBossKong = random.choice(list(factoryBossKongOptions))
+        else:
+            factoryBossOptions = [x for x in bossLevelOptions if Kongs.tiny in ownedKongs[x] and Items.PonyTailTwirl in ownedMoves[x]]
+            factoryBossIndex = random.choice(factoryBossOptions)
+            factoryBossKong = Kongs.tiny
+        bossLevelOptions.remove(factoryBossIndex)
+        # Then place Pufftoss (next most restrictive)
+        galleonBossOptions = [x for x in bossLevelOptions if Kongs.diddy in ownedKongs[x] or Kongs.lanky in ownedKongs[x] or Kongs.tiny in ownedKongs[x] or Kongs.chunky in ownedKongs[x]]
+        galleonBossIndex = random.choice(galleonBossOptions)
+        galleonBossKongOptions = set(ownedKongs[galleonBossIndex]).intersection({Kongs.diddy, Kongs.lanky, Kongs.tiny, Kongs.chunky})
+        galleonBossKong = random.choice(list(galleonBossKongOptions))
+        bossLevelOptions.remove(galleonBossIndex)
+        # Then place Armydillo 2
+        cavesBossOptions = [x for x in bossLevelOptions if Kongs.donkey in ownedKongs[x] or Kongs.diddy in ownedKongs[x] or Kongs.lanky in ownedKongs[x] or Kongs.chunky in ownedKongs[x]]
+        cavesBossIndex = random.choice(cavesBossOptions)
+        cavesBossKongOptions = set(ownedKongs[cavesBossIndex]).intersection({Kongs.donkey, Kongs.diddy, Kongs.lanky, Kongs.chunky})
+        cavesBossKong = random.choice(list(cavesBossKongOptions))
+        bossLevelOptions.remove(cavesBossIndex)
+        # Place the rest randomly
+        remainingBosses = list(bossLevelOptions)
+        random.shuffle(remainingBosses)
+        japesBossIndex = remainingBosses.pop()
+        japesBossKong = random.choice(ownedKongs[japesBossIndex])
+        aztecBossIndex = remainingBosses.pop()
+        aztecBossKong = random.choice(ownedKongs[aztecBossIndex])
+        castleBossIndex = remainingBosses.pop()
+        castleBossKong = random.choice(ownedKongs[castleBossIndex])
+        newBossMaps = []
+        newBossKongs = []
+        for level in range(0, 7):
+            if level == japesBossIndex:
+                newBossMaps.append(Maps.JapesBoss)
+                newBossKongs.append(japesBossKong)
+            elif level == aztecBossIndex:
+                newBossMaps.append(Maps.AztecBoss)
+                newBossKongs.append(aztecBossKong)
+            elif level == factoryBossIndex:
+                newBossMaps.append(Maps.FactoryBoss)
+                newBossKongs.append(factoryBossKong)
+            elif level == galleonBossIndex:
+                newBossMaps.append(Maps.GalleonBoss)
+                newBossKongs.append(galleonBossKong)
+            elif level == forestBossIndex:
+                newBossMaps.append(Maps.FungiBoss)
+                newBossKongs.append(forestBossKong)
+            elif level == cavesBossIndex:
+                newBossMaps.append(Maps.CavesBoss)
+                newBossKongs.append(cavesBossKong)
+            elif level == castleBossIndex:
+                newBossMaps.append(Maps.CastleBoss)
+                newBossKongs.append(castleBossKong)
+        # print("New Boss Order: " + str(newBossMaps))
+        # print("New Boss Kongs: " + str(newBossKongs))
+        if len(newBossMaps) < 7:
+            raise FillException("Invalid boss order with fewer than the 7 required main levels.")
+    except Exception as ex:
+        raise FillException(ex)
+
+    settings.boss_maps = newBossMaps
+    settings.boss_kongs = newBossKongs
+    settings.kutout_kongs = ShuffleKutoutKongs(settings.boss_maps, settings.boss_kongs, True)

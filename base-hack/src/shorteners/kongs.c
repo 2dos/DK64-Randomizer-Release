@@ -5,7 +5,7 @@ void unlockKongs(void) {
 		for (int i = 0; i < 5; i++) {
 			if (Rando.unlock_kongs & (1 << i)) {
 				if (i == 0) {
-					setPermFlag(FLAG_KONG_DK);
+					setPermFlag(0x181);
 				} else {
 					setPermFlag(KongFlagArray[i - 1]);
 				}

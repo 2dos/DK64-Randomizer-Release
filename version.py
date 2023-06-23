@@ -1,7 +1,7 @@
 """Holds the version for DK64 Rando."""
 import js
 
-stable_version = "1.5"
+stable_version = "2.0"
 dev_version = "2.0"
 
 try:
@@ -28,4 +28,4 @@ except Exception:
     pass
 whl_hash = "no_file_using_filler_hash"
 
-whl_hash = "64d521d4c61a7477d43559be76998aa1"
+whl_hash = "a0db21b737fd22d0f57b9733155102ea"

@@ -1,34 +1,122 @@
-'Shuffle Dirt Patch Locations.'
-_A=False
-import random,randomizer.CollectibleLogicFiles.AngryAztec,randomizer.CollectibleLogicFiles.CreepyCastle,randomizer.CollectibleLogicFiles.CrystalCaves,randomizer.CollectibleLogicFiles.DKIsles,randomizer.CollectibleLogicFiles.FranticFactory,randomizer.CollectibleLogicFiles.FungiForest,randomizer.CollectibleLogicFiles.GloomyGalleon,randomizer.CollectibleLogicFiles.JungleJapes
+"""Shuffle Dirt Patch Locations."""
+import random
+
+import randomizer.LogicFiles.AngryAztec
+import randomizer.LogicFiles.CreepyCastle
+import randomizer.LogicFiles.CrystalCaves
+import randomizer.LogicFiles.DKIsles
+import randomizer.LogicFiles.FranticFactory
+import randomizer.LogicFiles.FungiForest
+import randomizer.LogicFiles.GloomyGalleon
+import randomizer.LogicFiles.JungleJapes
 from randomizer.Enums.Collectibles import Collectibles
 from randomizer.Enums.Kongs import Kongs
 from randomizer.Enums.Levels import Levels
-from randomizer.Lists.Patches import DirtPatchLocations
-from randomizer.LogicClasses import Collectible
+from randomizer.Enums.Locations import Locations
+from randomizer.Lists.Location import LocationList
+from randomizer.Lists.Patches import DirtPatchData, DirtPatchLocations
+from randomizer.LogicClasses import LocationLogic
 from randomizer.Spoiler import Spoiler
-def addPatch(patch):
-	'Add patch to relevant Logic Region.';A=patch;C={Levels.DKIsles:randomizer.CollectibleLogicFiles.DKIsles.LogicRegions,Levels.JungleJapes:randomizer.CollectibleLogicFiles.JungleJapes.LogicRegions,Levels.AngryAztec:randomizer.CollectibleLogicFiles.AngryAztec.LogicRegions,Levels.FranticFactory:randomizer.CollectibleLogicFiles.FranticFactory.LogicRegions,Levels.GloomyGalleon:randomizer.CollectibleLogicFiles.GloomyGalleon.LogicRegions,Levels.FungiForest:randomizer.CollectibleLogicFiles.FungiForest.LogicRegions,Levels.CrystalCaves:randomizer.CollectibleLogicFiles.CrystalCaves.LogicRegions,Levels.CreepyCastle:randomizer.CollectibleLogicFiles.CreepyCastle.LogicRegions};B=C[A.level_name]
-	if A.logicregion in B:B[A.logicregion].append(Collectible(Collectibles.coin,Kongs.any,A.logic,None,1,True,_A))
-	else:B[A.logicregion]=[Collectible(Collectibles.coin,Kongs.any,A.logic,None,1,True,_A)]
+
+
+def addPatch(patch: DirtPatchData, enum_val: int, name: str):
+    """Add patch to relevant Logic Region."""
+    level_to_enum = {
+        Levels.DKIsles: randomizer.LogicFiles.DKIsles.LogicRegions,
+        Levels.JungleJapes: randomizer.LogicFiles.JungleJapes.LogicRegions,
+        Levels.AngryAztec: randomizer.LogicFiles.AngryAztec.LogicRegions,
+        Levels.FranticFactory: randomizer.LogicFiles.FranticFactory.LogicRegions,
+        Levels.GloomyGalleon: randomizer.LogicFiles.GloomyGalleon.LogicRegions,
+        Levels.FungiForest: randomizer.LogicFiles.FungiForest.LogicRegions,
+        Levels.CrystalCaves: randomizer.LogicFiles.CrystalCaves.LogicRegions,
+        Levels.CreepyCastle: randomizer.LogicFiles.CreepyCastle.LogicRegions,
+    }
+    level_to_name = {
+        Levels.DKIsles: "Isles",
+        Levels.JungleJapes: "Japes",
+        Levels.AngryAztec: "Aztec",
+        Levels.FranticFactory: "Factory",
+        Levels.GloomyGalleon: "Galleon",
+        Levels.FungiForest: "Fungi",
+        Levels.CrystalCaves: "Caves",
+        Levels.CreepyCastle: "Castle",
+    }
+    level_data = level_to_enum[patch.level_name]
+    level_data[patch.logicregion].locations.append(LocationLogic(enum_val, patch.logic))
+    LocationList[enum_val].name = f"{level_to_name[patch.level_name]} Dirt: {name}"
+    LocationList[enum_val].default_mapid_data[0].map = patch.map_id
+    LocationList[enum_val].level = patch.level_name
+
+
 def removePatches():
-	'Remove all patches from Logic regions.';C=[randomizer.CollectibleLogicFiles.DKIsles.LogicRegions,randomizer.CollectibleLogicFiles.JungleJapes.LogicRegions,randomizer.CollectibleLogicFiles.AngryAztec.LogicRegions,randomizer.CollectibleLogicFiles.FranticFactory.LogicRegions,randomizer.CollectibleLogicFiles.GloomyGalleon.LogicRegions,randomizer.CollectibleLogicFiles.FungiForest.LogicRegions,randomizer.CollectibleLogicFiles.CrystalCaves.LogicRegions,randomizer.CollectibleLogicFiles.CreepyCastle.LogicRegions]
-	for B in C:
-		for D in B:
-			E=B[D]
-			for A in E:
-				if A.type==Collectibles.coin and A.kong==Kongs.any:A.enabled=_A
-def ShufflePatches(spoiler,human_spoiler):
-	'Shuffle Dirt Patch Locations.';C=human_spoiler;B=spoiler;removePatches();B.dirt_patch_placement=[];A={Levels.DKIsles:[],Levels.JungleJapes:[],Levels.AngryAztec:[],Levels.FranticFactory:[],Levels.GloomyGalleon:[],Levels.FungiForest:[],Levels.CrystalCaves:[],Levels.CreepyCastle:[]}
-	for D in DirtPatchLocations:D.setPatch(_A);A[D.level_name].append(D)
-	select_random_dirt_from_area(A[Levels.DKIsles],4,B,C);del A[Levels.DKIsles]
-	for D in range(5):E=random.choice(list(A.keys()));F=A[E];select_random_dirt_from_area(F,2,B,C);del A[E]
-	for E in A.keys():F=A[E];select_random_dirt_from_area(F,1,B,C)
-	return C.copy()
-def select_random_dirt_from_area(area_dirt,amount,spoiler,human_spoiler):
-	'Select <amount> random dirt patches from <area_dirt>, which is a list of dirt patches. Makes sure max 1 dirt patch per group is selected.';D=amount;B=area_dirt
-	for E in range(D):
-		C=random.choice(B)
-		for A in DirtPatchLocations:
-			if A.name==C.name:A.setPatch(True);addPatch(A);human_spoiler.append(A.name);spoiler.dirt_patch_placement.append(A.name);B.remove(C);break
-		if D>1:B=[A for A in B if A.group!=C.group]
+    """Remove all patches from Logic regions."""
+    level_logic_regions = [
+        randomizer.LogicFiles.DKIsles.LogicRegions,
+        randomizer.LogicFiles.JungleJapes.LogicRegions,
+        randomizer.LogicFiles.AngryAztec.LogicRegions,
+        randomizer.LogicFiles.FranticFactory.LogicRegions,
+        randomizer.LogicFiles.GloomyGalleon.LogicRegions,
+        randomizer.LogicFiles.FungiForest.LogicRegions,
+        randomizer.LogicFiles.CrystalCaves.LogicRegions,
+        randomizer.LogicFiles.CreepyCastle.LogicRegions,
+    ]
+    for level in level_logic_regions:
+        for region in level:
+            region_data = level[region]
+            region_data.locations = [x for x in region_data.locations if x.id < Locations.RainbowCoin_Location00 or x.id > Locations.RainbowCoin_Location15]
+
+
+def ShufflePatches(spoiler: Spoiler, human_spoiler):
+    """Shuffle Dirt Patch Locations."""
+    removePatches()
+    spoiler.dirt_patch_placement = []
+    total_dirt_patch_list = {
+        Levels.DKIsles: [],
+        Levels.JungleJapes: [],
+        Levels.AngryAztec: [],
+        Levels.FranticFactory: [],
+        Levels.GloomyGalleon: [],
+        Levels.FungiForest: [],
+        Levels.CrystalCaves: [],
+        Levels.CreepyCastle: [],
+    }
+
+    for SingleDirtPatchLocation in DirtPatchLocations:
+        SingleDirtPatchLocation.setPatch(False)
+        total_dirt_patch_list[SingleDirtPatchLocation.level_name].append(SingleDirtPatchLocation)
+    select_random_dirt_from_area(total_dirt_patch_list[Levels.DKIsles], 4, spoiler, human_spoiler)
+    del total_dirt_patch_list[Levels.DKIsles]
+
+    for SingleDirtPatchLocation in range(5):
+        area_key = random.choice(list(total_dirt_patch_list.keys()))
+        area_dirt = total_dirt_patch_list[area_key]
+        select_random_dirt_from_area(area_dirt, 2, spoiler, human_spoiler)
+        del total_dirt_patch_list[area_key]
+
+    for area_key in total_dirt_patch_list.keys():
+        area_dirt = total_dirt_patch_list[area_key]
+        select_random_dirt_from_area(area_dirt, 1, spoiler, human_spoiler)
+
+    sorted_patches = spoiler.dirt_patch_placement.copy()
+    sorted_patches = sorted(sorted_patches, key=lambda d: d["score"])
+    for patch_index, patch in enumerate(sorted_patches):
+        patch["enum"] = Locations.RainbowCoin_Location00 + patch_index
+        addPatch(patch["patch"], patch["enum"], patch["name"])
+        patch["patch"] = None
+    return human_spoiler.copy()
+
+
+def select_random_dirt_from_area(area_dirt, amount, spoiler: Spoiler, human_spoiler):
+    """Select <amount> random dirt patches from <area_dirt>, which is a list of dirt patches. Makes sure max 1 dirt patch per group is selected."""
+    for iterations in range(amount):
+        selected_patch = random.choice(area_dirt)  # selects a random patch from the list
+        for patch in DirtPatchLocations:  # enables the selected patch
+            if patch.name == selected_patch.name:
+                patch.setPatch(True)
+                human_spoiler.append(patch.name)
+                local_map_index = len([x for x in spoiler.dirt_patch_placement if x["map"] == patch.map_id])
+                spoiler.dirt_patch_placement.append({"name": patch.name, "map": patch.map_id, "patch": patch, "score": (patch.map_id * 100) + local_map_index})
+                area_dirt.remove(selected_patch)
+                break
+        if amount > 1:  # if multiple patches are picked, remove patches from the same group, prevent them from being picked
+            area_dirt = [dirt for dirt in area_dirt if dirt.group != selected_patch.group]

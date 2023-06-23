@@ -1,11 +1,35 @@
-'Randomize Price Locations.'
+"""Randomize Price Locations."""
 from randomizer.Enums.Items import Items
-from randomizer.Patching.Patcher import ROM
-from randomizer.Spoiler import Spoiler
+from randomizer.Enums.Settings import MoveRando, RandomPrices
+from randomizer.Patching.Patcher import ROM, LocalROM
+
+
 def randomize_prices(spoiler):
-	'Write prices to ROM variable space based on settings.';B='vanilla';A=spoiler
-	if A.settings.random_prices!=B or A.settings.shuffle_items!='none':
-		C=A.settings.rom_data;D=53;ROM().seek(C+D)
-		if A.settings.random_prices!=B:ROM().write(1)
-		else:ROM().write(0)
-		ROM().write(A.settings.prices[Items.BaboonBlast]);ROM().write(A.settings.prices[Items.StrongKong]);ROM().write(A.settings.prices[Items.GorillaGrab]);ROM().write(A.settings.prices[Items.ChimpyCharge]);ROM().write(A.settings.prices[Items.RocketbarrelBoost]);ROM().write(A.settings.prices[Items.SimianSpring]);ROM().write(A.settings.prices[Items.Orangstand]);ROM().write(A.settings.prices[Items.BaboonBalloon]);ROM().write(A.settings.prices[Items.OrangstandSprint]);ROM().write(A.settings.prices[Items.MiniMonkey]);ROM().write(A.settings.prices[Items.PonyTailTwirl]);ROM().write(A.settings.prices[Items.Monkeyport]);ROM().write(A.settings.prices[Items.HunkyChunky]);ROM().write(A.settings.prices[Items.PrimatePunch]);ROM().write(A.settings.prices[Items.GorillaGone]);ROM().write(A.settings.prices[Items.ProgressiveSlam][0]);ROM().write(A.settings.prices[Items.ProgressiveSlam][1]);ROM().write(A.settings.prices[Items.Coconut]);ROM().write(A.settings.prices[Items.Peanut]);ROM().write(A.settings.prices[Items.Grape]);ROM().write(A.settings.prices[Items.Feather]);ROM().write(A.settings.prices[Items.Pineapple]);ROM().write(A.settings.prices[Items.Bongos]);ROM().write(A.settings.prices[Items.Guitar]);ROM().write(A.settings.prices[Items.Trombone]);ROM().write(A.settings.prices[Items.Saxophone]);ROM().write(A.settings.prices[Items.Triangle]);ROM().write(A.settings.prices[Items.HomingAmmo]);ROM().write(A.settings.prices[Items.SniperSight]);ROM().write(A.settings.prices[Items.ProgressiveAmmoBelt][0]);ROM().write(A.settings.prices[Items.ProgressiveAmmoBelt][1]);ROM().write(A.settings.prices[Items.ProgressiveInstrumentUpgrade][0]);ROM().write(A.settings.prices[Items.ProgressiveInstrumentUpgrade][1]);ROM().write(A.settings.prices[Items.ProgressiveInstrumentUpgrade][2])
+    """Write prices to ROM variable space based on settings."""
+    if spoiler.settings.random_prices != RandomPrices.vanilla:
+        varspaceOffset = spoiler.settings.rom_data
+        LocalROM().seek(varspaceOffset + 0x35)
+        # /* 0x035 */ char price_rando_on; // 0 = Price Randomizer off, 1 = On
+        if spoiler.settings.random_prices != RandomPrices.vanilla:
+            LocalROM().write(1)
+        else:
+            LocalROM().write(0)
+        progressive_items = {Items.ProgressiveAmmoBelt: 2, Items.ProgressiveInstrumentUpgrade: 3, Items.ProgressiveSlam: 2}
+        for item in progressive_items:
+            if item not in spoiler.settings.prices:
+                spoiler.settings.prices[item] = []
+            length = progressive_items[item]
+            if len(spoiler.settings.prices[item]) < length:
+                diff = length - len(spoiler.settings.prices[item])
+                for d in range(diff):
+                    spoiler.settings.prices[item].append(0)
+        LocalROM().seek(varspaceOffset + 0x45)
+        LocalROM().write(spoiler.settings.prices[Items.ProgressiveSlam][0])
+        LocalROM().write(spoiler.settings.prices[Items.ProgressiveSlam][1])
+
+        LocalROM().seek(varspaceOffset + 0x53)
+        LocalROM().write(spoiler.settings.prices[Items.ProgressiveAmmoBelt][0])
+        LocalROM().write(spoiler.settings.prices[Items.ProgressiveAmmoBelt][1])
+        LocalROM().write(spoiler.settings.prices[Items.ProgressiveInstrumentUpgrade][0])
+        LocalROM().write(spoiler.settings.prices[Items.ProgressiveInstrumentUpgrade][1])
+        LocalROM().write(spoiler.settings.prices[Items.ProgressiveInstrumentUpgrade][2])

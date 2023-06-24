@@ -5,7 +5,7 @@ stable_version = "2.0"
 dev_version = "2.0"
 
 try:
-    url = js.location.href.lower().replace("/", "").replace("http:", "").replace("https:", "")
+    url = js.location.hostname.lower().replace("/", "").replace("http:", "").replace("https:", "")
 except Exception:
     url = "localhost"
 
@@ -28,4 +28,4 @@ except Exception:
     pass
 whl_hash = "no_file_using_filler_hash"
 
-whl_hash = "a0db21b737fd22d0f57b9733155102ea"
+whl_hash = "c9e045a394a2a75fa2721e3c37794748"

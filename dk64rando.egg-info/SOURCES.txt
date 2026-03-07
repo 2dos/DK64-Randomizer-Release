@@ -2,10 +2,13 @@ LICENSE
 README.md
 setup.py
 archipelago/DK64Client.py
+archipelago/FillSettings.py
+archipelago/Goals.py
 archipelago/Hints.py
 archipelago/Items.py
 archipelago/Logic.py
 archipelago/Options.py
+archipelago/Prices.py
 archipelago/Regions.py
 archipelago/Rules.py
 archipelago/__init__.py
@@ -13,8 +16,9 @@ archipelago/client/__init__.py
 archipelago/client/ap_check_ids.py
 archipelago/client/check_flag_locations.py
 archipelago/client/common.py
+archipelago/client/emu_loader.py
 archipelago/client/items.py
-archipelago/client/pj64.py
+archipelago/client/ptrace.py
 controller/__init__.py
 controller/app.py
 controller/cleanup.py
@@ -59,6 +63,7 @@ randomizer/CollectibleLogicFiles/FungiForest.py
 randomizer/CollectibleLogicFiles/GloomyGalleon.py
 randomizer/CollectibleLogicFiles/JungleJapes.py
 randomizer/CollectibleLogicFiles/TestBananaTotals.py
+randomizer/CollectibleLogicFiles/TestCoinTotals.py
 randomizer/CollectibleLogicFiles/__init__.py
 randomizer/Enums/Collectibles.jsonc
 randomizer/Enums/Collectibles.py
@@ -190,6 +195,13 @@ randomizer/Patching/ShopRandomizer.py
 randomizer/Patching/UpdateHints.py
 randomizer/Patching/__init__.py
 randomizer/Patching/generate_kong_color_images.py
+randomizer/Patching/ASM/Actors.py
+randomizer/Patching/ASM/Cosmetic.py
+randomizer/Patching/ASM/Items.py
+randomizer/Patching/ASM/Kaizo.py
+randomizer/Patching/ASM/Save.py
+randomizer/Patching/ASM/TextFiles.py
+randomizer/Patching/ASM/__init__.py
 randomizer/Patching/Cosmetics/Colorblind.py
 randomizer/Patching/Cosmetics/CustomTextures.py
 randomizer/Patching/Cosmetics/EnemyColors.py
@@ -205,6 +217,7 @@ randomizer/Patching/Library/Assets.py
 randomizer/Patching/Library/DataTypes.py
 randomizer/Patching/Library/Generic.py
 randomizer/Patching/Library/Image.py
+randomizer/Patching/Library/ItemRando.py
 randomizer/Patching/Library/__init__.py
 tests/test_spoiler.py
 ui/__init__.py
